@@ -2,6 +2,11 @@ body {
   padding-top: 70px;
 }
 
+.product-card:hover {
+  transform: scale(105%);
+  transition: 0.5s;
+  cursor: pointer;
+}
 
 .product-list-img{
   width: 150px;
@@ -9,6 +14,47 @@ body {
   object-fit: cover;
 }
 
+.product-card-img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+}
+
+.product-card-badge {
+  right: -10px ;
+  background-color: #0d6efd;
+  transform: translate(center,left);
+}
+
+.product-card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 限制顯示行數 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-car-body {
+  height: 150px ;
+}
+
 .aside-list:hover a{
   color:  #0d6efd !important;
+}
+
+.product-modal-primary-img{
+  width:320px ;
+  height: 320px;
+  object-fit: cover;
+}
+
+.product-modal-secondary-img{
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+}
+
+.product-modal-secondary-img-container{
+  height: 320px;
+  overflow-y: scroll;
 }
