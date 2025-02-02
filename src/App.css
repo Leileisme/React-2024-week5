@@ -43,8 +43,8 @@ body {
 }
 
 .product-modal-primary-img{
-  width:320px ;
-  height: 320px;
+  width:315px ;
+  height: 315px;
   object-fit: cover;
 }
 
@@ -54,7 +54,31 @@ body {
   object-fit: cover;
 }
 
+.product-modal-secondary-img:hover{
+  transform: scale(105%);
+  transition: 0.3s;
+  cursor: pointer;
+}
+
 .product-modal-secondary-img-container{
-  height: 320px;
+  height: 315px;
   overflow-y: scroll;
+}
+
+.cart-number-input {
+  width: 50px !important;
+  height: 31px;
+}
+
+.product-detail{
+  height: 90vh !important;
+  overflow-y: scroll !important;
+}
+
+.pre-line {
+  white-space: pre-line;
+}
+
+.cart-offcanvas{
+  width: 570px !important;
 }

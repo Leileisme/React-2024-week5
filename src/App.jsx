@@ -17,6 +17,13 @@ function App() {
   const [isList, setIsList] = useState(true) // 判斷產品List/Card
   const [cart,setCart] = useState({}) // 購物車
   const [productDetail,setProductDetail] = useState({})
+  const [cartQty,setCartQty] = useState(1) // 加入購物車 單獨商品
+  const [cartItemsQty,setCartItemsQty] = useState([{
+    id:'',
+    qty:1
+  }]) // 加入購物車 多獨商品
+
+  const [formCart,setFormCart] = useState(true)
 
   const offcanvasCartRef = useRef(null) // 購物車 Offcanvas DOM
   const addOffcanvasCartRef = useRef(null) // 購物車 new Offcanvas 的方法
@@ -50,6 +57,8 @@ function App() {
     }
   }
 
+
+
   // 加入購物車
   async function addCartItem(product_id,qty) {
     try {
@@ -67,6 +76,8 @@ function App() {
     }
   }
 
+
+
   useEffect(()=>{
     getProductsList()
     getCart()
@@ -78,22 +89,29 @@ function App() {
       const res = await axios.get(`${BASE_URL}/v2/api/${PATH}/cart`)
       console.log('購物車', res.data.data)
       setCart(res.data.data)
+      
+      setCartItemsQty(
+        res.data.data.carts.map(cart=>({
+          id: cart.product_id,
+          qty:cart.qty
+        }))
+      )
     } catch (error) {
       showErrorToast(error?.response?.data?.message)
       
     }
   }
 
-    // 刪除購物車（全部）
-    async function deleteCartAll() {
-      try {
-        const res = await axios.delete(`${BASE_URL}/v2/api/${PATH}/carts`)
-        getCart()
-      } catch (error) {
-        showErrorToast(error?.response?.data?.message)
-        
-      }
+  // 刪除購物車（全部）
+  async function deleteCartAll() {
+    try {
+      const res = await axios.delete(`${BASE_URL}/v2/api/${PATH}/carts`)
+      getCart()
+    } catch (error) {
+      showErrorToast(error?.response?.data?.message)
+      
     }
+  }
 
   // 監聽打開購物車
   function handleClickCartOffcanvas(){
@@ -113,13 +131,14 @@ function App() {
 
   // 監聽打開 產品細節
   function handleClickProductModal(product){
+    const imgsUrl =  [product.imageUrl,...(product.imagesUrl || [])]
     setProductDetail( {
       category:product.category || "",
       content:product.content || "",
       description:product.description || "",
       id:product.id || "",
       imageUrl:product.imageUrl || "",
-      imagesUrl:product.imagesUrl || [],
+      imagesUrl:imgsUrl || [],
       is_enabled:product.is_enabled ||0,
       num: product.num || 0,
       origin_price: product.origin_price || 0,
@@ -131,13 +150,57 @@ function App() {
     addProductDetailRef.current.show()
   }
 
-  // 監聽關閉 產品細節
-  function handleCloseProductModal(){
-    addProductDetailRef.current.hide()
+  // 購物車 的 商品們數量
+  function getCartItemsQty(product){
+    console.log('cartItemsQty',cartItemsQty);
+    console.log('夠故車車車車222',product);
+    
+    const currentItem = cartItemsQty.find(it=>it.id === product.product_id)
+    
+    return currentItem ? currentItem.qty : 1
   }
 
+  // 減少商品數量 btn 
+  function handleReduceCartQty(e,product,formCart){
+    setCartQty(Number(cartQty > 2 ? cartQty - 1 : 1))
+    if((cartQty-1) <= 0 ){
+      showDangerToast('最低數量是1喔！')
+    }
+    if(formCart){
+      addCartItem(product.id,)
+    }
+  }
 
+  // 增加商品數量 btn 
+  function handleAddCartQty(product,formCart){
+    console.log('增加商品數量',product);
+    
+    setCartQty(Number(cartQty < product.stockQty ? cartQty + 1 : product.stockQty))
+    if((cartQty+1) > product.stockQty ){
+      showDangerToast(`庫存只剩${product.stockQty}喔！`)
+    }
+  }
 
+  // 監聽 產品詳情中數量
+  function handleCartQtyInput(e,product,formCart) {
+    const val = Number(e.target.value)
+    if(isNaN(val)){
+      showDangerToast(`只能輸入數字喔！`)
+      setCartQty(1)
+    }else if(val > product.stockQty){
+      showDangerToast(`庫存只剩${product.stockQty}喔！`)
+      setCartQty(product.stockQty)
+    }else if(val < 1) {
+      setCartQty(1)
+      showDangerToast('最低數量是1喔！')
+    }
+  }
+
+  // 監聽 產品詳情中 加入購物車
+  function handleAddCartItem(id,cartQty) {
+    addCartItem(id,cartQty)
+    addProductDetailRef.current.hide()
+  }
 
   // 監聽商品換頁
   function handlePageClick(e,page){
@@ -155,9 +218,8 @@ function App() {
     }
   }
 
-
   // 成功訊息
-  function showSuccessToast(text) {
+  const showSuccessToast = (text) => {
     toast.success(text, {
       position: "bottom-right",
       autoClose: 3000,
@@ -182,6 +244,21 @@ function App() {
       draggable: true,
       progress: undefined,
       theme: "light",
+      transition: Bounce,
+      });
+  }
+
+  // 警示訊息
+  const showDangerToast = (text) => {
+    toast.warn(text, {
+      position: "bottom-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "colored",
       transition: Bounce,
       });
   }
@@ -216,7 +293,7 @@ function App() {
                 }
             </button>
 
-            <div className="offcanvas offcanvas-end" tabIndex="-1" ref={offcanvasCartRef} style={{width:"450px"}}>
+            <div className="offcanvas offcanvas-end cart-offcanvas" tabIndex="-1" ref={offcanvasCartRef}>
               <div className="offcanvas-header">
                 <h5 className="offcanvas-title">購物車</h5>
                 <button type="button" className="btn-close" onClick={handleCloseCartOffcanvas} ></button>
@@ -228,6 +305,7 @@ function App() {
                       <th scope="col"></th>
                       <th scope="col">商品名稱</th>
                       <th scope="col">數量/單位</th>
+                      <th scope="col">庫存</th>
                       <th scope="col">價格</th>
 
                       <th></th>
@@ -235,29 +313,56 @@ function App() {
                   </thead>
                   <tbody >
 
-                    {cart.carts?.map((item)=>(
-                      <tr key={item.product.id}>
-                        <td className="align-content-center">
-                          <input className="form-check-input" type="checkbox" ></input>
-                        </td>
-                        <td className="align-content-center" style={{width:"180px"}}>{item.product.title}</td>
-                        <td className="align-content-center">{item.qty}</td>
-                        <td className="align-content-center">
-                          <span className="text-danger">$ {item.final_total}</span>
-                        </td>
-                      </tr>
-                    ))
+                    { cart.carts
+                      &&
+                      cart.carts?.map((item)=>(
+                        <tr key={item.product.id}>
+                          <td className="align-content-center">
+                            <input className="form-check-input" type="checkbox" ></input>
+                          </td>
+                          <td className="align-content-center " style={{width:"180px"}}>{item.product.title}</td>
+                          <td className="align-content-center  ">
+                            <span className="me-2 d-flex align-items-center ">
+                              <button 
+                                type="button"
+                                className={`btn btn-sm btn-outline-primary`}
+                                onClick={(e)=>handleReduceCartQty(e,item.product,formCart)}
+                              >-</button>
+                              <input
+                                type="text"
+                                className="form-control cart-number-input text-center "
+                                value={getCartItemsQty(item)}
+                                onChange={(e) => setCartQty(e.target.value)} 
+                                onBlur={(e)=>{handleCartQtyInput(e,item.product,formCart)}}
+                              />
+                              <button
+                                type="button"
+                                className={`btn btn-sm btn-outline-primary`}
+                                onClick={()=>handleAddCartQty(item.product,formCart)}
+                              >+</button>
+                              <span className="ms-2">{item.product.unit}</span>
+                            </span>
+                          </td>
+                          <td className="align-content-center">
+                            <span className="d-flex text-secondary">{item.product.stockQty}</span>
+                          </td>
+                          <td className="align-content-center" style={{width:"100px"}}>
+                            <span className="text-danger" >$ {item.final_total}</span>
+                          </td>
+                        </tr>
+                      ))
                     }
                     <tr>
                       <td></td>
                       <td></td>
-                      <td className="align-content-center" >總價</td>
-                      <td className="align-content-center jus">$ {cart?.final_total}</td>
+                      <td></td>
+                      <td className="align-content-center">總價</td>
+                      <td className="align-content-center">$ {cart?.final_total}</td>
                     </tr>
                   </tbody>
                 </table>
 
-                <button type="button" className="btn btn-sm btn-primary w-100 mb-2 mt-5">去買單</button>
+                <button type="button" className={`btn btn-sm btn-primary w-100 mb-2 mt-5 ${cart?.carts?.length === 0 ? "disabled" : ""}`}>去買單</button>
                 <button 
                   type="button" 
                   className="btn btn-sm btn-outline-danger w-100"
@@ -314,7 +419,7 @@ function App() {
                   <thead>
                     <tr>
                       <th scope="col">圖片</th>
-                      <th scope="col">商品名稱</th>
+                      <th scope="col" >商品名稱</th>
                       <th scope="col">分類</th>
                       <th scope="col">價格</th>
                       <th></th>
@@ -341,9 +446,10 @@ function App() {
                               查看詳情
                             </button>
 
-                            <div ref={productDetailRef} className="modal fade"  tabIndex="-1">
-                              <div className="modal-dialog">
-                                <div className="modal-content">
+
+                            <div ref={productDetailRef} className="modal fade "  tabIndex="-1">
+                              <div className="modal-dialog ">
+                                <div className="modal-content product-detail">
                                   <div className="modal-header">
                                     <h1 className="modal-title fs-5" id="exampleModalLabel">{productDetail.title}</h1>
                                     <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -354,16 +460,68 @@ function App() {
                                         <div className="product-modal-secondary-img-container">
                                           {Array.isArray(productDetail.imagesUrl,index) && productDetail?.imagesUrl.map((img)=>(
                                             <div key={img} className="mb-2">
-                                              <img src={img} alt="副圖"  className="product-modal-secondary-img" />
+                                              <img 
+                                                src={img}
+                                                alt="副圖"
+                                                className="product-modal-secondary-img"
+                                                onClick={()=>{
+                                                  setProductDetail({
+                                                    ...productDetail,
+                                                    imageUrl:img
+                                                  })
+                                                }}
+                                              />
                                             </div>
                                           ))}
                                         </div>
                                           <img src={productDetail.imageUrl} alt="主圖" className="product-modal-primary-img" />
                                         </div>
                                       </div>
+                                      <div className="col-12 mt-2 d-flex align-items-center">
+                                        <span className="text-secondary">價格：</span>
+                                        <span className="text-danger me-2 fs-3">${productDetail.price}</span>
+                                        <del className="text-secondary fs-6">${productDetail.origin_price}</del>
+                                      </div>
+                                      <div className="col-12 mt-2 d-flex align-items-center">
+                                        <span className="text-secondary">數量：</span>
+                                        <span className="text-danger me-2 d-flex align-items-center ">
+                                          <button 
+                                          type="button"
+                                          className={`btn btn-sm btn-outline-primary`}
+                                          onClick={handleReduceCartQty}
+                                          >-</button>
+                                          <input
+                                          type="text"
+                                          className="form-control cart-number-input text-center "
+                                          value={cartQty}
+                                          onChange={(e) => setCartQty(e.target.value)} 
+                                          onBlur={(e)=>{handleCartQtyInput(e,productDetail)}}
+                                          />
+                                          <button
+                                            type="button"
+                                            className={`btn btn-sm btn-outline-primary`}
+                                            onClick={()=>handleAddCartQty(productDetail)}
+                                            >+</button>
+                                        </span>
+                                        <span className="text-secondary fs-6">剩下{productDetail.stockQty }個</span>
+                                      </div>
+                                      <div className="col-12 mt-3">
+                                        <button
+                                          type="button"
+                                          className="btn btn-sm btn-primary w-100"
+                                          onClick={()=>handleAddCartItem(productDetail.id,cartQty) }>
+                                          加入購物車
+                                        </button>
+                                      </div>
+                                      <div className="col-12 mt-3">
+                                        <h5 className="h6 text-p">產品描述：</h5>
+                                        <p className="text-secondary">{productDetail.description}</p>
+
+                                        <h5 className="h6">商品說明：</h5>
+                                        <p className="text-secondary pre-line">{productDetail.content}</p>
+                                      </div>
                                   </div>
                                   <div className="modal-footer">
-
                                   </div>
                                 </div>
                               </div>
@@ -434,7 +592,7 @@ function App() {
                       href="#"
                       aria-label="Previous"
                       onClick={(e)=>handlePageClick(e,pagination.current_page-1)}>
-                      <span aria-hidden="true">&laquo;</span>
+                      <span>&laquo;</span>
                     </a>
                   </li>
                   {
@@ -454,7 +612,7 @@ function App() {
                       href="#"
                       aria-label="Next"
                       onClick={(e)=>handlePageClick(e,pagination.current_page+1)}>
-                      <span aria-hidden="true">&raquo;</span>
+                      <span>&raquo;</span>
                     </a>
                   </li>
                 </ul>
