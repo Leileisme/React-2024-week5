@@ -4,7 +4,7 @@ body {
 
 .product-card:hover {
   transform: scale(105%);
-  transition: 0.5s;
+  transition: 0.15s;
   cursor: pointer;
 }
 
