@@ -279,8 +279,7 @@ function App() {
   // }
 
   function handleCartQtyInputOnBlur(e,cart,formCart,productDetail) {
-    const val = e.target.value
-
+    const val = Number(e.target.value)
     if(isNaN(val) || val <1 ){
       showDangerToast('只能輸入大於0的數字喔！')
       formCart ? getCart() : setCartQty(1)

@@ -99,30 +99,43 @@ const Header = (props) =>{
                           <thead>
                             <tr>
                               <th scope="col">商品名稱</th>
-                              <th scope="col">數量/單位</th>
-                              <th scope="col">價格</th>
+                              <th scope="col"  className="text-center">單價</th>
+                              <th scope="col" className="text-center">數量/單位</th>
+                              <th scope="col" className="text-center">價格</th>
                             </tr>
                           </thead>
                           <tbody >
                           { cart.carts?.map((item)=>(
                               <tr key={item.product.id}>
-                                <td className="align-content-center " style={{width:"280px"}}>{item.product.title}</td>
-                                <td className="align-content-center  ">
+                                <td className="align-content-center " style={{width:"300px"}}>{item.product.title}</td>
+                                <td className="align-content-center" style={{width:"90px"}}>
+                                  <div className="d-flex justify-content-end">
+                                  <span className="text-secondary">$ {item.product.price}</span>
+                                  </div>
+                                </td>
+                                <td className="align-content-center">
                                   <span className="me-2 d-flex align-items-center ">
                                     {getCartItemsQty(item)}
-                                    <span className="ms-2">{item.product.unit}</span>
+                                    <span className="ms-1">{item.product.unit}</span>
                                   </span>
                                 </td>
                                 <td className="align-content-center" style={{width:"100px"}}>
-                                  <span className="text-danger" >$ {item.final_total}</span>
+                                  <div className="d-flex justify-content-end">
+                                    <span className="text-danger" >$ {item.final_total}</span>
+                                  </div>
                                 </td>
                               </tr>
                             ))
                           }
                             <tr>
                               <td></td>
+                              <td></td>
                               <td className="align-content-center">總價</td>
-                              <td className="align-content-center">$ {cart?.final_total}</td>
+                              <td className="align-content-center">
+                                <div className="d-flex justify-content-end text-danger fw-bold">
+                                  $ {cart?.final_total}
+                                </div>
+                                </td>
                             </tr>
                           </tbody>
                         </table>
@@ -217,8 +230,9 @@ const Header = (props) =>{
                           <th scope="col"></th>
                           <th scope="col">商品名稱</th>
                           <th scope="col">數量/單位</th>
+                          <th scope="col" className="text-center">單價</th>
                           <th scope="col">庫存</th>
-                          <th scope="col">價格</th>
+                          <th scope="col" className="text-center">價格</th>
                         </tr>
                       </thead>
                       <tbody >
@@ -232,7 +246,7 @@ const Header = (props) =>{
                               onClick={()=>deleteCartItem(item.id)}
                               >X</button>
                           </td>
-                          <td className="align-content-center " style={{width:"180px"}}>{item.product.title}</td>
+                          <td className="align-content-center " style={{width:"200px"}}>{item.product.title}</td>
                           <td className="align-content-center  ">
                             <span className="me-2 d-flex align-items-center ">
                               <button 
@@ -252,14 +266,21 @@ const Header = (props) =>{
                                 className={`btn btn-sm btn-outline-primary`}
                                 onClick={()=>handleAddCartQty(item,formCart)}
                               >+</button>
-                              <span className="ms-2">{item.product.unit}</span>
+                              <span className="ms-1">{item.product.unit}</span>
                             </span>
                           </td>
+                          <td className="align-content-center" >
+                            <div className="d-flex justify-content-end">
+                              <span className="text-secondary " style={{width:"70px"}}>$ {item.product.price}</span>
+                            </div>
+                          </td>
                           <td className="align-content-center">
-                            <span className="d-flex text-secondary">{item.product.stockQty}</span>
+                            <span className="d-flex text-secondary " style={{width:"45px"}}>{item.product.stockQty}</span>
                           </td>
                           <td className="align-content-center" style={{width:"100px"}}>
-                            <span className="text-danger" >$ {item.final_total}</span>
+                            <div className="d-flex justify-content-end">
+                              <span className="text-danger text-end" >$ {item.final_total}</span>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -268,8 +289,14 @@ const Header = (props) =>{
                           <td></td>
                           <td></td>
                           <td></td>
+                          <td></td>
                           <td className="align-content-center">總價</td>
-                          <td className="align-content-center">$ {cart?.final_total}</td>
+                          <td className="align-content-center">
+                            <div className="d-flex justify-content-end text-danger fw-bold">
+                              $ {cart?.final_total}
+                            </div>
+                          </td>
+                        
                         </tr>
                       </tbody>
                     </table>
