@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
+import { ToastContainer, toast, Bounce } from 'react-toastify'
+import { Modal,Offcanvas}  from 'bootstrap'
 import axios from 'axios'
 import './App.css'
-import { ToastContainer, toast, Bounce } from 'react-toastify';
-import { Modal,Offcanvas}  from 'bootstrap'
 import Header from './component/Header'
+import ProductList from './component/ProductList'
+import ProductCard from './component/ProductCard'
+import ProductModalDetail from './ProductModalDetail'
+import Pagination from './component/Pagination'
 
 const BASE_URL = import.meta.env.VITE_BASE_URL
 const PATH = import.meta.env.VITE_API_PATH
@@ -118,8 +122,18 @@ function App() {
       console.log('購物車', res.data.data)
       setCart(res.data.data)
       
+      const _cart = res.data.data.carts.map((item)=>{
+        if(item.qty > item.product.stockQty){
+          showDangerToast(`商品${item.product.title}庫存不足，最多只能購買${item.product.stockQty}個`)
+          item.qty = item.product.stockQty
+          editCartItem(item.id,item.product_id,item.product.stockQty)
+        }
+        return item
+      })
+
+
       setCartItemsQty(
-        res.data.data.carts.map(cart=>({
+        _cart.map(cart=>({
           id: cart.product_id,
           qty:cart.qty
         }))
@@ -326,7 +340,7 @@ function App() {
   const showDangerToast = (text) => {
     toast.warn(text, {
       position: "bottom-right",
-      autoClose: 3000,
+      autoClose: 5000,
       hideProgressBar: false,
       closeOnClick: false,
       pauseOnHover: true,
@@ -406,203 +420,33 @@ function App() {
               {
                 isList 
                 ?
-                  <table className="table">
-                  <thead>
-                    <tr>
-                      <th scope="col">圖片</th>
-                      <th scope="col" >商品名稱</th>
-                      <th scope="col">分類</th>
-                      <th scope="col">價格</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody >
-                    {productsList.map((product)=>(
-                      <tr key={product.id} >
-                        <td className="align-content-center"><img src={product.imageUrl} alt="" className="product-list-img" /></td>
-                        <td className="align-content-center"> <h3 className="h6">{product.title}</h3></td>
-                        <td className="align-content-center">{product.category}</td>
-                        <td className="align-content-center">
-                          <span className="h5 text-danger">$ {product.price}</span>
-                          <br />
-                          <del className="text-secondary">$ {product.origin_price}</del>
-                        </td>
-                        <td className="align-content-center">
-                          <div className="btn-group" role="group">
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-secondary"
-                              onClick={()=>handleClickProductModal(product)}
-                              >
-                              查看詳情
-                            </button>
-
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-primary"
-                              onClick={()=>addCartItem(product.id,1) }>
-                              加入購物車
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                    }
-                  </tbody>
-                </table>
-              :
-                <div  className="row mt-4">
-                  {
-                    productsList.map((product)=>(
-                          <div className="col-3 mb-4 " key={product.id}>
-                            <div 
-                              className="card product-card" 
-                              onClick={
-                                ()=>handleClickProductModal(product)
-                              }>
-                            <img src={product.imageUrl}  className="card-img-top product-card-img position-relative"  alt="商品主圖" />
-                            <div className="card-body product-car-body d-flex flex-column justify-content-between">
-                              <div>
-                                <h5 className="card-title product-card-title h6">{product.title}</h5>
-                              </div>
-
-                              <div className="align-items-bottom">
-                                <p className="card-text mb-2">
-                                  <span className="h4 text-danger">$ {product.price}</span>
-                                  <span className="text-secondary">／</span>
-                                  <del className="text-secondary">$ {product.origin_price}</del>
-                                </p>
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-primary w-100"
-                                  onClick={()=>addCartItem(product.id,1) }>
-                                  加入購物車
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                    ))
-                  }
-                </div>
+                <ProductList
+                  productsList={productsList}
+                  handleClickProductModal={handleClickProductModal}
+                  addCartItem={addCartItem}
+                />
+                :
+                <ProductCard
+                  productsList={productsList}
+                  handleClickProductModal={handleClickProductModal}
+                  addCartItem={addCartItem}
+                />
               }
-              <div ref={productDetailRef} className="modal fade "  tabIndex="-1">
-                <div className="modal-dialog ">
-                  <div className="modal-content product-detail">
-                    <div className="modal-header">
-                      <h1 className="modal-title fs-5" id="exampleModalLabel">{productDetail.title}</h1>
-                      <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div className="modal-body">
-                      <div className="row">
-                        <div className="col-12 d-flex justify-content-between">
-                          <div className="product-modal-secondary-img-container">
-                            {Array.isArray(productDetail.imagesUrl) && productDetail?.imagesUrl.map((img)=>(
-                              <div key={img} className="mb-2">
-                                <img 
-                                  src={img}
-                                  alt="副圖"
-                                  className="product-modal-secondary-img"
-                                  onClick={()=>{
-                                    setProductDetail({
-                                      ...productDetail,
-                                      imageUrl:img
-                                    })
-                                  }}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                            <img src={productDetail.imageUrl} alt="主圖" className="product-modal-primary-img" />
-                          </div>
-                        </div>
-                        <div className="col-12 mt-2 d-flex align-items-center">
-                          <span className="text-secondary">價格：</span>
-                          <span className="text-danger me-2 fs-3">${productDetail.price}</span>
-                          <del className="text-secondary fs-6">${productDetail.origin_price}</del>
-                        </div>
-                        <div className="col-12 mt-2 d-flex align-items-center">
-                          <span className="text-secondary">數量：</span>
-                          <span className="text-danger me-2 d-flex align-items-center ">
-                            <button 
-                            type="button"
-                            className={`btn btn-sm btn-outline-primary`}
-                            onClick={()=> handleReduceCartQty(null,null)}
-                            >-</button>
-                            <input
-                            type="text"
-                            className="form-control cart-number-input text-center "
-                            value={cartQty}
-                            onChange={handleCartQtyInputOnChange} 
-                            onBlur={(e)=>{handleCartQtyInputOnBlur(e,null,null,productDetail)}}
-                            />
-                            <button
-                              type="button"
-                              className={`btn btn-sm btn-outline-primary`}
-                              onClick={()=>handleAddCartQty(null,null,productDetail)}
-                              >+</button>
-                          </span>
-                          <span className="text-secondary fs-6">剩下{productDetail.stockQty }個</span>
-                        </div>
-                        <div className="col-12 mt-3">
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-primary w-100"
-                            onClick={()=>handleAddCartItem(productDetail.id) }>
-                            加入購物車
-                          </button>
-                        </div>
-                        <div className="col-12 mt-3">
-                          <h5 className="h6 text-p">產品描述：</h5>
-                          <p className="text-secondary">{productDetail.description}</p>
-
-                          <h5 className="h6">商品說明：</h5>
-                          <p className="text-secondary pre-line">{productDetail.content}</p>
-                        </div>
-                    </div>
-                    <div className="modal-footer">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            
-
-              
-              
-
-              <nav aria-label="Page navigation example">
-                <ul className="pagination justify-content-center">
-                  <li className="page-item">
-                    <a
-                      className={`page-link ${pagination.has_pre ? "" : "disabled"}`}
-                      href="#"
-                      aria-label="Previous"
-                      onClick={(e)=>handlePageClick(e,pagination.current_page-1)}>
-                      <span>&laquo;</span>
-                    </a>
-                  </li>
-                  {
-                    [...new Array(pagination.total_pages)].map((_,index)=>(
-                      <li className="page-item" key={index}>
-                        <a
-                          className={`page-link ${pagination.current_page === index+1 ? "active" : ""}`}
-                          href="#" onClick={(e)=>handlePageClick(e,index+1)} >
-                          {index+1}
-                        </a>
-                      </li>
-                    ))
-                  }
-                  <li className="page-item">
-                    <a 
-                      className={`page-link ${pagination.has_next ? "" : "disabled"}`}
-                      href="#"
-                      aria-label="Next"
-                      onClick={(e)=>handlePageClick(e,pagination.current_page+1)}>
-                      <span>&raquo;</span>
-                    </a>
-                  </li>
-                </ul>
-              </nav>
+              <ProductModalDetail
+                productDetailRef={productDetailRef}
+                productDetail={productDetail}
+                setProductDetail={setProductDetail}
+                handleReduceCartQty={handleReduceCartQty}
+                cartQty={cartQty}
+                handleCartQtyInputOnChange={handleCartQtyInputOnChange}
+                handleCartQtyInputOnBlur={handleCartQtyInputOnBlur}
+                handleAddCartQty={handleAddCartQty}
+                handleAddCartItem={handleAddCartItem}
+              />
+              <Pagination
+                pagination={pagination}
+                handlePageClick={handlePageClick}
+              />
             </section>
         </div>
       </main>
