@@ -2,7 +2,7 @@ const ProductList = (props) =>{
 const {
   productsList,
   handleClickProductModal,
-  addCartItem
+  handleAddCartItem
 } = props
 
 return(
@@ -41,7 +41,7 @@ return(
               <button
                 type="button"
                 className="btn btn-sm btn-primary"
-                onClick={()=>addCartItem(product.id,1) }>
+                onClick={() => handleAddCartItem(product.id,false) }>
                 加入購物車
               </button>
             </div>

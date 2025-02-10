@@ -39,7 +39,6 @@ const Header = (props) =>{
   })
 
   const onSubmit = (data) => {
-    console.log("表單提交資料", data);
     const {message,...user} = data
     postOrder(user,message)
   }
@@ -55,10 +54,8 @@ const Header = (props) =>{
       getCart()
       setToPay(false)
       addOffcanvasCartRef.current.hide()
-      // deleteCartAll()
       showSuccessToast('訂單成功送出')
     } catch (error) {
-      console.log('order',error);
       showErrorToast(error?.response?.data?.message)
     }
   } 
@@ -248,7 +245,7 @@ const Header = (props) =>{
                                 className="form-control cart-number-input text-center "
                                 value={getCartItemsQty(item)}
                                 onChange={(e) => handleCartQtyInputOnChange(e,item,formCart)} 
-                                onBlur={(e)=>{handleCartQtyInputOnBlur(e,item,formCart)}}
+                                onBlur={(e)=>{handleCartQtyInputOnBlur(e,item,true,null)}}
                               />
                               <button
                                 type="button"

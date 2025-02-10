@@ -2,8 +2,7 @@ const ProductCard = (props) => {
   const {
     productsList,
     handleClickProductModal,
-    addCartItem
-
+    handleAddCartItem
   } = props
 return(
   <>
@@ -33,7 +32,7 @@ return(
                       className="btn btn-sm btn-primary w-100"
                       onClick={(e)=>{
                         e.stopPropagation()
-                        addCartItem(product.id,1) }
+                        handleAddCartItem(product.id,false) }
                       }>
                       加入購物車
                     </button>

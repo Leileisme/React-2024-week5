@@ -74,7 +74,7 @@ const ProductModalDetail = (props) => {
                   <button
                     type="button"
                     className="btn btn-sm btn-primary w-100"
-                    onClick={()=>handleAddCartItem(productDetail.id) }>
+                    onClick={()=>handleAddCartItem(productDetail.id,true) }>
                     加入購物車
                   </button>
                 </div>
