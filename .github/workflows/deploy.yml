@@ -1,0 +1,38 @@
+name: Deploy to GitHub Pages  # Workflow 的名稱，這個會顯示在 GitHub Actions 的介面上
+
+on:
+  push:
+    branches:
+      - main  # 當推送到 main 分支時觸發這個 workflow
+
+jobs:
+  build-and-deploy:  # 定義一個工作 (job)，名稱為 build-and-deploy
+    runs-on: ubuntu-latest  # 工作執行在最新版本的 Ubuntu Linux 環境上
+
+    steps:
+    # 步驟 1: 檢出 (Checkout) 儲存庫
+    - name: Checkout repository
+      uses: actions/checkout@v4  # 使用 GitHub 官方提供的 Action，檢出當前分支的代碼到 runner 環境中
+
+    # 步驟 2: 設定 Node.js 環境
+    - name: Set up Node.js
+      uses: actions/setup-node@v3  # 使用官方 Node.js 的 Action
+      with:
+        node-version: '18'  # 指定 Node.js 版本（根據你的專案需要選擇，例如 14、16 或 18）
+        # 基於 穩定性 和 兼容性，選擇 Node.js 18。
+        # 需要 最新功能 或是你使用的依賴項已經優化為最新版本，選擇 Node.js 20。
+
+    # 步驟 3: 安裝專案的依賴項
+    - name: Install dependencies
+      run: npm install  # 執行 npm install 命令，安裝 package.json 中定義的所有依賴項
+
+    # 步驟 4: 編譯專案
+    - name: Build the project
+      run: npm run build  # 執行 npm 的 build 指令，通常在專案的 package.json 中定義，生成靜態文件
+
+    # 步驟 5: 部署到 GitHub Pages
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4  # 使用 peaceiris 提供的部署到 GitHub Pages 的 Action
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub 提供的內建 token，用來授權部署操作
+        publish_dir: ./dist  # 指定部署的目錄，這裡需要是 `npm run build` 生成的文件夾
