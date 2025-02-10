@@ -99,8 +99,8 @@ const Header = (props) =>{
                           <thead>
                             <tr>
                               <th scope="col">商品名稱</th>
-                              <th scope="col"  className="text-center">單價</th>
-                              <th scope="col" className="text-center">數量/單位</th>
+                              <th scope="col">單價</th>
+                              <th scope="col">數量</th>
                               <th scope="col" className="text-center">價格</th>
                             </tr>
                           </thead>
@@ -109,7 +109,7 @@ const Header = (props) =>{
                               <tr key={item.product.id}>
                                 <td className="align-content-center " style={{width:"300px"}}>{item.product.title}</td>
                                 <td className="align-content-center" style={{width:"90px"}}>
-                                  <div className="d-flex justify-content-end">
+                                  <div className="d-flex">
                                   <span className="text-secondary">$ {item.product.price}</span>
                                   </div>
                                 </td>
@@ -229,8 +229,8 @@ const Header = (props) =>{
                         <tr>
                           <th scope="col"></th>
                           <th scope="col">商品名稱</th>
-                          <th scope="col">數量/單位</th>
-                          <th scope="col" className="text-center">單價</th>
+                          <th scope="col">數量</th>
+                          <th scope="col">單價</th>
                           <th scope="col">庫存</th>
                           <th scope="col" className="text-center">價格</th>
                         </tr>
@@ -271,7 +271,7 @@ const Header = (props) =>{
                           </td>
                           <td className="align-content-center" >
                             <div className="d-flex justify-content-end">
-                              <span className="text-secondary " style={{width:"70px"}}>$ {item.product.price}</span>
+                              <span className="text-secondary " style={{width:"75px"}}>$ {item.product.price}</span>
                             </div>
                           </td>
                           <td className="align-content-center">
