@@ -9,13 +9,11 @@ const Header = (props) =>{
     cart,
     toPay,
     getCartItemsQty,
-    deleteCartItem,
     handleReduceCartQty,
     handleCartQtyInputOnChange,
     handleCartQtyInputOnBlur,
     handleAddCartQty,
     setToPay,
-    handleDeleteCartAll,
     formCart,
     showErrorToast,
     showSuccessToast,
@@ -23,7 +21,8 @@ const Header = (props) =>{
     addOffcanvasCartRef,
     BASE_URL,
     PATH,
-    axios
+    axios,
+    setIsLoading
   }=props
 
   const {
@@ -41,6 +40,42 @@ const Header = (props) =>{
   const onSubmit = (data) => {
     const {message,...user} = data
     postOrder(user,message)
+  }
+
+
+  // 刪除購物車（全部）
+  async function deleteCartAll() {
+    setIsLoading(true)
+    try {
+      await axios.delete(`${BASE_URL}/v2/api/${PATH}/carts`)
+      getCart()
+      showSuccessToast('成功清除購物車！')
+    } catch (error) {
+      showErrorToast(error?.response?.data?.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // 監聽清空購物車
+  function handleDeleteCartAll(){
+    deleteCartAll()
+  }
+
+  // 編輯購物車 單獨產品數量
+  async function deleteCartItem(cart_id) {
+    setIsLoading(true)
+
+    try {
+      await axios.delete(`${BASE_URL}/v2/api/${PATH}/cart/${cart_id}`)
+      showSuccessToast('刪除產品成功')
+      getCart()
+      
+    } catch (error) {
+      showErrorToast(error?.response?.data?.message)
+    } finally {
+    setIsLoading(false)
+    }
   }
 
   // 送出訂單
@@ -308,7 +343,7 @@ const Header = (props) =>{
                     >去買單</button>
                     <button 
                       type="button" 
-                      className="btn btn-sm btn-outline-danger w-100"
+                      className={`btn btn-sm btn-outline-danger w-100 ${cart?.carts?.length === 0 ? "disabled" : ""}`}
                       onClick={handleDeleteCartAll}
                     >清空購物車</button>
                   </div>
